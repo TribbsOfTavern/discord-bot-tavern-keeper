@@ -1,10 +1,12 @@
 ''' ------------------------------------------- IMPORTS ------------------------------------------- '''
-from random import randrange
-from random import seed
-from random import shuffle
+from random import rand_randrange
+from random import rand_seed
+from random import rand_shuffle
 from re import match as re_match
 
 ''' ------------------------------------------- CONSTANTS ------------------------------------------- '''
+# TODO -- This is all going to be moved over to a MongoDB table.
+# TODO -- Figure out a way to implement ALT options
 PHB_RACES = {
     "human": {
         "stats":{ "STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0}
@@ -115,7 +117,7 @@ PHB_BACKGROUNDS = [
     "urchin"
 ]
 
-seed()
+rand_seed()
 ''' ------------------------------------------- UTILITY FUNCTIONS ------------------------------------------- '''
 def roll_dn(roll:str) -> dict:
     dice = None
@@ -136,7 +138,7 @@ def roll_dn(roll:str) -> dict:
     
     # Roll the dice
     for i in range(dice):
-        res['rolls'].append(randrange(1, side+1))
+        res['rolls'].append(rand_randrange(1, side+1))
     # if we are keeping certain ones
     if 'k' in roll:
         # are we keeping high
@@ -182,7 +184,7 @@ def create_deck() -> list:
     for k in suit.keys():
         for v in values:
             deck.append(str(v) + str(suit[k]))
-    shuffle(deck)
+    rand_shuffle(deck)
     return deck
     
 ''' ------------------------------------------- GENERATOR FUNCTIONS ------------------------------------------- '''
@@ -200,11 +202,11 @@ def generate_character(opts:list) -> dict:
                         
     if opts == [] or opts == None:
         # Random Race
-        char_race = list(PHB_RACES)[randrange(len(PHB_RACES)-1)]
+        char_race = list(PHB_RACES)[rand_randrange(len(PHB_RACES)-1)]
         # Random Class
-        char_class = list(PHB_CLASSES)[randrange(len(PHB_CLASSES))]
+        char_class = list(PHB_CLASSES)[rand_randrange(len(PHB_CLASSES))]
         # Random Background
-        char_background = list(PHB_BACKGROUNDS)[randrange(0, len(PHB_BACKGROUNDS))]
+        char_background = list(PHB_BACKGROUNDS)[rand_randrange(0, len(PHB_BACKGROUNDS))]
         # Random Stats
         for k in char_stat_rolls.keys():
             roll = roll_dn('3d6')
@@ -230,10 +232,10 @@ def generate_character(opts:list) -> dict:
                     
 
         # If character traits are still None then give them random traits
-        if char_race == None: char_race = list(PHB_RACES)[randrange(len(PHB_RACES)-1)]
-        if char_class == None: char_class = list(PHB_CLASSES)[randrange(len(PHB_CLASSES))]
+        if char_race == None: char_race = list(PHB_RACES)[rand_randrange(len(PHB_RACES)-1)]
+        if char_class == None: char_class = list(PHB_CLASSES)[rand_randrange(len(PHB_CLASSES))]
         if char_level == 0: char_level = 1
-        if char_background == None: char_background = list(PHB_BACKGROUNDS)[randrange(0, len(PHB_BACKGROUNDS))]
+        if char_background == None: char_background = list(PHB_BACKGROUNDS)[rand_randrange(0, len(PHB_BACKGROUNDS))]
         if char_stat_rolls == {"STR": 0, "DEX": 0, "CON": 0, "INT": 0, "WIS": 0, "CHA": 0}:
             for k in char_stat_rolls.keys():
                 roll = roll_dn('3d6')

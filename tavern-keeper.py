@@ -1,27 +1,29 @@
-import secrets as secret
-import random
-import generators as dnd
-import dndMongo as db
-import json
-import asyncio
-import discord
-from discord.ext import commands, tasks
+import secrets as secret    # Keeping my secrets secret
+import generators as dnd    # DnD generators
+import dndMongo as db       # DnD MongoDB tables connection, setters/getters
+import random               # Python lib
+import json                 # Python lib
+import asyncio              # Python lib
+import discord              # python3 -m pip install -U discord.py OR discord.py[Voice] 
+from discord.ext import commands, tasks # Comes with above lib
 
+##
+# discord.py lib DOCS -> https://discordpy.readthedocs.io/en/stable/api.html
+##
+
+# -------------------------- Variables -------------------------- #
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-description = '''
-    Tavern Keeper Bot was created specifically for The Tavern.    
-'''
-
-# -------------------------- Variables -------------------------- #
+description = '''    Tavern Keeper Bot was created specifically for The Tavern.    '''
 bot = commands.Bot(command_prefix='!', description=description, intents=intents, activity=discord.Game(name="!help to see commands"))
 bot_db = db.DB('localhost', 27017, 'rpg-tables')
 config_name = 'config.json'
 config = None
+autosave_time = 300 # time in second for how often autosave should occure for confi
 
-# -------------------------- VIEWS -------------------------- #
+# Views ----------------------------------------------------- #
 class viewItem(discord.ui.View):
     def __init__(self, info:dict):
         super().__init__()
@@ -118,9 +120,9 @@ class viewMonster(discord.ui.View):
             res += f'' if self.info["Regional Effects"] == '' else f'**Regional Effects:**\n>{self.info["Regional Effects"]}\n\n'
         await interaction.response.edit_message(content=res)
 
-# --------------------------  COMMANDS  -------------------------- #
+# General Commands ------------------------------------------ #
 @bot.event
-async def on_ready():
+async def on_ready() -> None:
     print('- - - - - - - - - - - - - -')
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print(f'Connected to {len(bot.guilds)} guilds.')
@@ -128,15 +130,16 @@ async def on_ready():
     global config
     config = loadConfig(config_name)
     AutoSaveConfig.start()    
-    print(config)
 
 @bot.command()
-async def ping(ctx):
+async def ping(ctx) -> None:
     """ Call and return, returns pong!"""
     await bot_send(ctx, "pong!")
     
 @bot.command()
-async def roll(ctx, roll:str = commands.parameter(default='1d20', description='roll of the dice')):
+async def roll(ctx, roll:str = commands.parameter(default='1d20', description='roll of the dice')) -> None:
+    # This is another format I was working with and might switch all commands over to.
+    # This helps the !help <cmd> explain the args
     """ Roll dice. 
         standard roll   3d6
         keep highest    2d20kh1
@@ -155,13 +158,14 @@ async def roll(ctx, roll:str = commands.parameter(default='1d20', description='r
             await bot_send(ctx, f"{ctx.author.display_name} rolled {roll} for {res}")
     
 @bot.command()
-async def roll_character(ctx, *args):
-    """ Generate a random character at level 1 with 3d6 stats
-        level       sets level
-        class       sets class
-        race        sets race
-        background  sets background
-        rolls       style for rolling stats (standard 3d6 or 4d6kh3)
+async def roll_character(ctx, *args) -> None:
+    """ Generate a character.
+        With no options, this will generate a level 1 character with random options and stats rolled as 3d6.
+        level=      sets level. Invalid returns level 1
+        class=      sets class. Invalid return random class
+        race=       sets race. Invalid returns random race
+        background= sets background. Invalid returns random background
+        rolls=      style for rolling stats (standard 3d6 or 4d6kh3). Invalid returns 3d6 rolls
     """
     if args == (): character = dnd.generate_character(None)
     else: character = dnd.generate_character(list(args))
@@ -181,7 +185,7 @@ async def roll_character(ctx, *args):
     await bot_send(ctx, result)
 
 @bot.command()
-async def spell(ctx, *args):
+async def spell(ctx, *args) -> None:
     """ Get information pertaining to a spell
         Ex. !spell 'Acid Splash'
         Ex. !spell 'Magic Missle'
@@ -196,7 +200,7 @@ async def spell(ctx, *args):
         await bot_send(ctx, f'No spell was found for {" ".join(args)}')
     
 @bot.command()
-async def item(ctx, *args):
+async def item(ctx, *args) -> None:
     """ Get information pertaining to an item
         Ex. !item +1 Armor
         Ex. !item Bag of Tricks
@@ -214,16 +218,11 @@ async def item(ctx, *args):
         await bot_send(ctx, f'Item not found for {" ".join(args)}')
 
 @bot.command()
-async def monster(ctx, *args):
+async def monster(ctx, *args) -> None:
     """ Get information pertaining to a monster
         Ex. !monster 'Goblin'
         Ex. !monster 'Green Hag'
     """
-    verbose = False
-    if args[-1] == '--all':
-        args = args[0:-1]
-        verbose = True
-        
     info = bot_db.get_item_from('monsters-5e', {"Name": {'$regex': f'{(" ".join(args)).replace("+", "[+]")}', "$options": "i"}})
     if info != None:
         res = f'## __{info["Name"]}__\t\tCR: {info["CR"]}\n>'
@@ -246,8 +245,13 @@ async def monster(ctx, *args):
         await bot_send(ctx, f'No record found for monster {" ".join(args)}', None, None)
     
 @bot.command()
-async def draw(ctx, *args):
-    """ Draws a number of random cards from the server deck. """
+async def draw(ctx, *args) -> None:
+    """ Draws a number of random cards from the server deck.
+        Ex. !draw will return a single card from the server deck.
+        Ex. !draw 1 will return a single card from the server deck.
+        Ex. !draw 3 will return three cards from the server deck.
+        Limited to drawing 1 to 52 cards.
+    """
     global config
     args = list(args)
     try:
@@ -265,8 +269,14 @@ async def draw(ctx, *args):
         pass
 
 @bot.command()
-async def fightme(ctx, *args):
-    """ Fight the tavern keeper, if you lose you get kicked from voice channel"""
+async def fightme(ctx, *args) -> None:
+    """ Fight the tavern keeper, if you lose and you are in a voice channel you get kicked from voice channel"""
+    # Server Owner can force the fight, otherwise Tavern Keeper will not bother with the fight.
+    # This was added to mess with my brother who kept wanting to be able to fight the Tavern Keeper.
+    # I am the server owner.
+    
+    
+    # TODO the --force doesnt seem to be working at the moment -- Fix This
     forced = False
     if args:
         if args[0] == '--force':  forced = True
@@ -279,16 +289,22 @@ async def fightme(ctx, *args):
             await ctx.author.move_to(None)
             
 @bot.command()
-async def suggest(ctx, *args):
+async def suggest(ctx, *args) -> None:
     """ Add a suggestion to the box for the developer. """
+    # TODO -- Fix This
+    # This seems like a good idea but easily spammable, which would suck. Dont need my dms being blown up.
+    # Might just append these to a file or MongoDB table for me to look at on my own time without potentially blowing up my DMs
     if args:
         await ctx.guild.owner.send(content=f"New Suggestion: {' '.join(args)}", silent=True)
         await bot_send(ctx, f"Your suggestion has been submitted, {ctx.author.display_name}")
         await delete_msg(ctx)
 
 @bot.command()
-async def coinflip(ctx, call:str=None):
-    ''' flip a coin and call it in the air.'''
+async def coinflip(ctx, call:str=None) -> None:
+    ''' Flip a coin and call it in the air.
+        Ex. !coinflip               returns a Heads or Tails for the flip.
+        Ex. !coinflip heads|tails   return the coin flip and if you win or lose.
+    '''
     if call != None:
         call = True if call.lower() == "heads" else False
         flip = random.choice([True, False])
@@ -298,27 +314,20 @@ async def coinflip(ctx, call:str=None):
         await bot_send(ctx, f"Coin flipped {'HEADS' if flip == True else 'TAILS'}")
     else:
         await bot_send(ctx, f"Coin wasn't flipped due to confusion.")
-# -------------------------- Tasks ----------------------------- #
-@tasks.loop(seconds=300)
-async def AutoSaveConfig():
+# Tasks ----------------------------------------------------- #
+@tasks.loop(seconds=autosave_time)
+async def AutoSaveConfig() -> None:
+    ''' Auto save the config to file every autosave_time seconds. '''
     saveConfig(config_name)
 
-# --------------------------  Configuration Commands  -------------------------- #
+# Owner & Configuration Commands ---------------------------- #
 @bot.command(hidden=True)
-async def setChannel(ctx, chn):
-    if is_owner(ctx):
-        global config
-        channel = discord.utils.get(ctx.guild.channels, name=chn)
-        if channel != None:
-            print(f'{config[str(ctx.guild.id)]}: bot_channel: {channel}')
-            config[str(ctx.guild.id)]["bot_channel"] = ctx.channel.id
-            await bot_send(ctx, f'Bot now configured to send only to {channel.name} or DMs')
-        else:
-            await bot_send(ctx, f'channel {chn} was not found and no config was sent')
-    await delete_msg(ctx)
-    
-@bot.command(hidden=True)
-async def settings(ctx, cmd:str="", val:str=None):
+async def settings(ctx, cmd:str="", val:str=None) -> None:
+    ''' Configure the bot in various way specific to the server.
+        ** Owner Only Command **
+        !settings channel <text-channel>    Sets the text channel the bot responds in.
+        !settings silent <true|false>       Sets weither or not there is a blip when a message gets sent by boy.
+    '''
     if is_owner(ctx):
         global config
         if cmd == 'channel':
@@ -333,32 +342,51 @@ async def settings(ctx, cmd:str="", val:str=None):
         if cmd == 'silent' and (val.lower() == 'true' or val.lower() == 'false'):
             if val.lower() == 'true': config[str(ctx.guild.id)]["silenced"] ==  True
             if val.lower() == 'false': config[str(ctx.guild.id)]["silenced"] == False
-                 
-# --------------------------  Owner Commands  -------------------------- #
+
 @bot.command(hidden=True)
-async def clean(ctx, ch_name:str=None, limit:int=100):
+async def clean(ctx, limit:int=100, ch_name:str=None) -> None:
+    ''' Clean up a text-channel
+        ** Owner Only Command **
+        Ex. !clean                      Purge last 100 messages in current text channel.
+        Ex. !clean 15                   Purge last 15 messages in current text channel.
+        Ex. !clean 15 <text-channel>    Purge last 15 messages in specified text channel.
+    '''
     if is_owner(ctx) and not isDM(ctx):
         channel = discord.utils.get(ctx.guild.channels, name=ch_name)
         if channel != None:
             await ctx.message.delete()
             await asyncio.sleep(1)
             await channel.purge(limit=limit)
+        else:
+            await ctx.message.delete()
+            await asyncio.sleep(1)
+            await ctx.channel.purge(limit=limit)
 
 @bot.command(hidden=True)
-async def getServerDeck(ctx):
+async def peakdeck(ctx) -> None:
+    ''' Get a peak at the current server deck. 
+        ** Owner only command **
+        Ex. !peakdeck   Returns the current server deck.
+        
+        Keep in mind a deck is created, shuffled, then added to the end of current server deck.
+        When cards are drawn its from the front (top) of the deck. So when a new deck is added,
+        There is a chance to see 'duplicate cards' but a whole deck will be drawn before new
+        cards are drawn.
+    '''
     if is_owner(ctx):
         await bot_send(ctx, f'{len(config[str(ctx.guild.id)]["server_deck"])} cards remaining. | {" | ".join(config[str(ctx.guild.id)]["server_deck"])}')
 
 @bot.command(hidden=True)
-async def test(ctx, *args):
+async def test(ctx, *args) -> None:
+    ''' This has speciffically only been used for dev.
+        It changes based on what I am testing.
+        ** Owner Only Command **
+    '''
     if is_owner(ctx):
-        await ctx.send("This is a test", view=viewItem())
+        await bot_send(ctx, ' | '.join(args))
 
-# --------------------------  Utility Functions  -------------------------- #
-def is_owner(ctx):
-    return True if ctx.author.id == ctx.guild.owner.id else False
-
-async def bot_send(ctx, msg, embed=None, view=None):
+# Utility Functions ----------------------------------------- #
+async def bot_send(ctx, msg, embed=None, view=None) -> None:
     if isinstance(ctx.channel, discord.DMChannel):
         await ctx.reply(msg, mention_author=False, embed=embed, view=view)
     else:
@@ -368,14 +396,18 @@ async def bot_send(ctx, msg, embed=None, view=None):
             channel = bot.get_channel(config[str(ctx.guild.id)]["bot_channel"])
             await channel.send(msg, embed=embed, view=view, silent=config[str(ctx.guild.id)]["silenced"])
             
-async def delete_msg(msg):
+async def delete_msg(msg) -> None:
     if not isDM(msg):
         await msg.message.delete()
+        
+def is_owner(ctx) -> bool:
+    return True if ctx.author.id == ctx.guild.owner.id else False
 
-def isDM(ctx):
+def isDM(ctx) -> bool:
+    ''' Checks if the message is from a DM or a channel '''
     return True if isinstance(ctx.channel, discord.DMChannel) else False
 
-def create_embed(style:str=None, data:dict=None):
+def create_embed(style:str=None, data:dict=None) -> discord.Embed:
     embed = None
     # style == 'item' embed
     if style == 'item':
@@ -432,7 +464,7 @@ def create_embed(style:str=None, data:dict=None):
     
     return embed
 
-def loadConfig(file_name):
+def loadConfig(file_name) -> dict:
     res = {}
     try:
         with open(file_name, "r") as fobj:
@@ -454,14 +486,13 @@ def loadConfig(file_name):
         print(f'Tavern Keeper Config was created as {file_name}')
     return res
     
-def saveConfig(file_name):
+def saveConfig(file_name) -> None:
     try:
         with open(file_name, "w") as fobj:
             json.dump(config, fobj)
-        print(f'Autosave completed')
     except Exception as e:
         print(f'Autosave failed: {e}')
         
-# ------------------------------------------------------------------------------------
+# MAIN ------------------------------------------------------ #
 if __name__ == '__main__':
     bot.run(secret.bot_token)

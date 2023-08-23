@@ -14,7 +14,7 @@ class DB():
         self.client = self.conn(self.uri, self.port)
         self.curr_db = self.set_db(db_name)
         
-    def conn(self, uri:str='', port:int=0) -> pymongo.MongoClient():
+    def conn(self, uri:str='', port:int=0) -> pymongo.MongoClient:
         return pymongo.MongoClient(uri, port)
     
     def set_db(self, db_name:str='') -> pymongo.database.Database:
