@@ -1,7 +1,7 @@
 ''' ------------------------------------------- IMPORTS ------------------------------------------- '''
-from random import rand_randrange
-from random import rand_seed
-from random import rand_shuffle
+from random import randrange as rand_randrange
+from random import seed as rand_seed
+from random import shuffle as rand_shuffle
 from re import match as re_match
 
 ''' ------------------------------------------- CONSTANTS ------------------------------------------- '''
