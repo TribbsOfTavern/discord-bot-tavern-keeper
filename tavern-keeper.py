@@ -287,17 +287,6 @@ async def fightme(ctx, *args) -> None:
         await bot_send(ctx, f"{ctx.author.display_name} was destroyed by the Tavern Keeper") if val < 50 else f"{ctx.author.display_name} fought and won against the Tavern Keeper"
         if val < 50:
             await ctx.author.move_to(None)
-            
-@bot.command()
-async def suggest(ctx, *args) -> None:
-    """ Add a suggestion to the box for the developer. """
-    # TODO -- Fix This
-    # This seems like a good idea but easily spammable, which would suck. Dont need my dms being blown up.
-    # Might just append these to a file or MongoDB table for me to look at on my own time without potentially blowing up my DMs
-    if args:
-        await ctx.guild.owner.send(content=f"New Suggestion: {' '.join(args)}", silent=True)
-        await bot_send(ctx, f"Your suggestion has been submitted, {ctx.author.display_name}")
-        await delete_msg(ctx)
 
 @bot.command()
 async def coinflip(ctx, call:str=None) -> None:
