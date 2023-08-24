@@ -18,10 +18,10 @@ intents.members = True
 
 description = '''    Tavern Keeper Bot was created specifically for The Tavern.    '''
 bot = commands.Bot(command_prefix='!', description=description, intents=intents, activity=discord.Game(name="!help to see commands"))
-bot_db = db.DB('localhost', 27017, 'rpg-tables')
-config_name = 'config.json'
-config = None
-autosave_time = 300 # time in second for how often autosave should occure for confi
+bot_db = db.DB('localhost', 27017, 'rpg-tables')    #DB obj
+config_name = 'config.json' # Name of the config file to use, if not found one will be created
+config = None       # This will load in on startup
+autosave_time = 300 # time in second for how often autosave should occure for config
 
 # Views ----------------------------------------------------- #
 class viewItem(discord.ui.View):
@@ -314,6 +314,29 @@ async def coinflip(ctx, call:str=None) -> None:
         await bot_send(ctx, f"Coin flipped {'HEADS' if flip == True else 'TAILS'}")
     else:
         await bot_send(ctx, f"Coin wasn't flipped due to confusion.")
+        
+@bot.command()
+async def createdeck(ctx, deck_type:str=commands.parameter(default="standard", description="Type of deck to be created: standard|domt|tarot"), deck_name:str=commands.parameter(default="", description="Name of the deck, must not contain spaces")) -> None:
+    ''' Create a custom deck with a name that can be called upon.
+        Ex. !createdeck standard myDeck
+        Ex. !createdeck domt someName
+        Ex. !createdeck tarot FortuneFavors
+    '''
+    if deck_name != "":
+        if deck_type.lower() == "standard":
+            # Create a standard playing card deck
+            pass
+        elif deck_type.lower() == "domt":
+            # Create a deck of many things
+            pass
+        elif deck_type.lower() == "tarot":
+            # Create a tarot card deck
+            pass
+    else:
+        # Return a message that the deck must be named
+        pass
+
+
 # Tasks ----------------------------------------------------- #
 @tasks.loop(seconds=autosave_time)
 async def AutoSaveConfig() -> None:
@@ -481,9 +504,16 @@ def loadConfig(file_name) -> dict:
                 "silenced": False,
                 "prefix": "!",
                 "server_deck": dnd.create_deck(),
-                "tables": {}
+                "tables": [],
+                "saved_decks": []
             }
         print(f'Tavern Keeper Config was created as {file_name}')
+    
+    # Update Configs that might not have the keys. ---> A litte too forward thinking
+    if "tables" not in res: res["tables"] = []
+    elif "tables" in res and type(res["tables"]) != list: res["tables"] = []
+    if "saved_decks" not in res: res["saved_decks"] = []
+    
     return res
     
 def saveConfig(file_name) -> None:
