@@ -258,7 +258,7 @@ async def draw(ctx, *args) -> None:
         if args == [] or int(args[0]) > 52: number = 1
         else: number = int(args[0])
         if number >= len(config[str(ctx.guild.id)]["server_deck"]):
-            config[str(ctx.guild.id)]["server_deck"] = config[str(ctx.guild.id)]["server_deck"] + dnd.create_deck()
+            config[str(ctx.guild.id)]["server_deck"] = config[str(ctx.guild.id)]["server_deck"] + dnd.create_standard_deck()
         cards = config[str(ctx.guild.id)]["server_deck"][:number]
         config[str(ctx.guild.id)]["server_deck"] = config[str(ctx.guild.id)]["server_deck"][number:]
         res = '| '
@@ -274,9 +274,6 @@ async def fightme(ctx, *args) -> None:
     # Server Owner can force the fight, otherwise Tavern Keeper will not bother with the fight.
     # This was added to mess with my brother who kept wanting to be able to fight the Tavern Keeper.
     # I am the server owner.
-    
-    
-    # TODO the --force doesnt seem to be working at the moment -- Fix This
     forced = False
     if args:
         if args[0] == '--force':  forced = True
@@ -305,27 +302,152 @@ async def coinflip(ctx, call:str=None) -> None:
         await bot_send(ctx, f"Coin wasn't flipped due to confusion.")
         
 @bot.command()
-async def createdeck(ctx, deck_type:str=commands.parameter(default="standard", description="Type of deck to be created: standard|domt|tarot"), deck_name:str=commands.parameter(default="", description="Name of the deck, must not contain spaces")) -> None:
+async def createdeck(ctx, deck_type:str=commands.parameter(default="standard", description="Type of deck to be created: standard|domt|tarot-full|tarot-major|tarot-minor"), deck_name:str=commands.parameter(default="", description="Name of the deck, must not contain spaces"), auto_shuffle:bool=commands.parameter(default=False, description="Should this deck reshuffle after last card is drawn.")) -> None:
     ''' Create a custom deck with a name that can be called upon.
         Ex. !createdeck standard myDeck
         Ex. !createdeck domt someName
         Ex. !createdeck tarot FortuneFavors
+    '''        
+    try:
+        if deck_name in config[str(ctx.guild.id)]["saved_decks"]: raise Exception("Deck already exists. Please consider a new name.")
+        if deck_name == "": raise Exception("The deck must have a name.")
+        if deck_type.lower() != "standard" or deck_type.lower() != "domt" or deck_type.lower() != "tarot": raise Exception("Invalid deck type. Make sure to use standard, domt, or tarot")
+        
+        if deck_type.lower() == "standard": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_standard_deck(), "discraded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "domt": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_domt_deck(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-major": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_major(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-minor": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_minor(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-full": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_full(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        
+    except Exception as e:
+        await bot_send(ctx, str(e))        
+
+@bot.command()
+async def drawdeck(ctx, deck_name:str=commands.parameter(default="", description="Name of the deck you wish to draw from")) -> None:
+    ''' Draw a single card from a named deck.
+        Ex. !drawdeck <deck name>
     '''
-    if deck_name != "":
-        if deck_type.lower() == "standard":
-            # Create a standard playing card deck
-            pass
-        elif deck_type.lower() == "domt":
-            # Create a deck of many things
-            pass
-        elif deck_type.lower() == "tarot":
-            # Create a tarot card deck
-            pass
-    else:
-        # Return a message that the deck must be named
-        pass
+    try: 
+        if not deck_name in config[str(ctx.guild.id)]["saved_decks"]: raise Exception("That deck doesn't exist.")
+            
+        is_last_card = False if len(config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"]) > 1 else True
+        
+        card = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][0]
+        config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"].append(card)
+        config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
+        
+        res = ""
+        if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "standard":
+            res =  f'Drawing from {deck_name}\n'
+            res += f'{card}'
+        elif config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "domt":
+            res =  f'Drawing from {deck_name}\n'
+            res += f'{card["name"]}\n'
+            res += f'{card["text"]}'
+        elif config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "tarot-major":
+            card = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][0]
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"].append(card)
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
+            res =  f'Drawing from {deck_name}\n'
+            res += f'{card["name"]} - '
+            res += f'Upright\n' if card["isReversed"] else f'Reversed\n'
+            res += f'{card["upright"]}' if card["isReversed"] else f'{card["reversed"]}'
+        elif config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "tarot-minor":
+            card = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][0]
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"].append(card)
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
+            res =  f'Drawing from {deck_name}\n'
+            res += f'{card["name"]} - '
+            res += f'Upright\n' if card["isReversed"] else f'Reversed\n'
+            res += f'{card["upright"]}' if card["isReversed"] else f'{card["reversed"]}'
+        elif config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "tarot-full":
+            card = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][0]
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"].append(card)
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
+            res =  f'Drawing from {deck_name}\n'
+            res += f'{card["name"]} - '
+            res += f'Upright\n' if card["isReversed"] else f'Reversed\n'
+            res += f'{card["upright"]}' if card["isReversed"] else f'{card["reversed"]}'
+        
+        if is_last_card and config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"]["auto_shuffle"]:
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"] = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"] + config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"]
+            config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"] = []
+            random.shuffle(config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"])
+            if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] != "standard":
+                for card in config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"]:
+                    card["isReversed"] = random.choice([True, False])
+            res += f"\n\n {ctx.author.display_name} has drawn the last card and activated autoshuffle.\n"
+            res += f'{deck_name} deck has been reshuffled.' 
+        
+        await bot_send(ctx, res)
 
+    except Exception as e:
+        await bot_send(ctx, "That deck doesn't exist.")
 
+@bot.command()
+async def reshuffle(ctx, deck_name:str=commands.parameter(default="", description="Name of the deck you wish to reshuffle")) -> None:
+    ''' Allows a deck owner to reshuffle the named deck.
+        Ex. !reshuffle <deck name> 
+    '''
+    try:
+        if deck_name not in config[str(ctx.guild.id)]["saved_decks"]: raise Exception(f"No deck with the name {deck_name} exists")
+        if ctx.author.id != config[str(ctx.guild.id)]["saved_decks"][deck_name]["owner"]: raise Exception("You must be the author of the deck to reshuffle.")
+
+        config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"] = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"] + config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"]
+        config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"] = []
+        random.shuffle(config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"])
+        if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] != "standard":
+            for card in config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"]:
+                card["isReversed"] = random.choice([True, False])
+        bot_send(ctx, f'Deck {deck_name} was reshuffled.')
+    
+    except Exception as e:
+        bot_send(ctx, str(e))
+
+@bot.command()
+async def removedeck(ctx, deck_name:str=commands.parameter(default="", description="Name of the deck you wish to delete")) -> None:
+    ''' Allows a deck owner to remove a deck from saved decks. 
+        Server owners also can remove decks to help cleanup their server.
+        Ex. !removedeck <deck name>
+    '''
+    try:
+        if deck_name not in config[str(ctx.guild.id)]["saved_decks"]: raise Exception(f"No deck with the name {deck_name} exists.")
+        if ctx.author.id != config[str(ctx.guild.id)]["saved_decks"][deck_name]["owner"] or not is_owner(ctx): raise Exception(f"You need to be the deck owner or server owner to remove a named deck.")
+        
+        del config[str(ctx.guild.id)]["saved_decks"][deck_name]
+        bot_send(ctx, f'Deck {deck_name} was removed.')
+        
+    except Exception as e:
+        bot_send(ctx, str(e))
+
+@bot.command()
+async def revealdeck(ctx, deck_name:str=commands.parameter(default="", description="Name of the deck you wish to reveal.")) -> None:
+    ''' Allows a deck owner to reveal the deck and discard piles. 
+        Ex. !revealdeck <deck name>
+    '''
+    try:
+        if deck_name not in config[str(ctx.guild.id)]["saved_decks"]: raise Exception(f"No deck with the name {deck_name} exists.")
+        if ctx.author.id != config[str(ctx.guild.id)]["saved_decks"][deck_name]["owner"]: raise Exception(f'You must be the deck author to reveal the deck.')
+        
+        res = f'{ctx.author.display_name} has decided to reveal the {deck_name} deck.\n'
+        if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "standard":
+            res += f'Remaining deck: {" | ".join(config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"])}\n'
+            res += f'Discarded: {" | ".join(config[str(ctx.guild.id)]["saved_decks"][deck_name]["discraded"])}'
+            
+        else:
+            res += f'Remaining deck: '
+            for card in config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"]:
+                res += f' | {card["name"]} '
+            res += f' |\n'
+            res += f'Discarded: '
+            for card in config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"]:
+                res += f' | {card["name"]} '
+            res += f' |'
+            
+        await bot_send(ctx, res)
+    except Exception as e:
+        bot_send(ctx, str(e))
+    
 # Tasks ----------------------------------------------------- #
 @tasks.loop(seconds=autosave_time)
 async def AutoSaveConfig() -> None:
@@ -492,16 +614,17 @@ def loadConfig(file_name) -> dict:
                 "bot_channel": None,
                 "silenced": False,
                 "prefix": "!",
-                "server_deck": dnd.create_deck(),
-                "tables": [],
-                "saved_decks": []
+                "server_deck": dnd.create_standard_deck(),
+                "tables": {},
+                "saved_decks": {}
             }
         print(f'Tavern Keeper Config was created as {file_name}')
     
     # Update Configs that might not have the keys. ---> A litte too forward thinking
-    if "tables" not in res: res["tables"] = []
-    elif "tables" in res and type(res["tables"]) != list: res["tables"] = []
-    if "saved_decks" not in res: res["saved_decks"] = []
+    if "tables" not in res: res["tables"] = {}
+    elif "tables" in res and type(res["tables"]) != dict: res["tables"] = {}
+    if "saved_decks" not in res: res["saved_decks"] = {}
+    elif "saved_decks" in res and type(res["saved_decks"]) != dict: res["saved_decks"] = {}
     
     return res
     

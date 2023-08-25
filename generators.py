@@ -2,6 +2,7 @@
 from random import randrange as rand_randrange
 from random import seed as rand_seed
 from random import shuffle as rand_shuffle
+from random import randchoice as rand_choice
 from re import match as re_match
 
 ''' ------------------------------------------- CONSTANTS ------------------------------------------- '''
@@ -209,6 +210,404 @@ DECK_OF_MANY_THINGS = [
     }
 ]
 
+MAJOR_ARCANA = [
+    {
+        "name": "The Fool",
+        "isReversed": False,
+        "upright": "New beginnings, innocence, adventure",
+        "reversed": "Recklessness, fearlessness, risk",
+    },{
+        "name": "The Magician",
+        "isReversed": False,
+        "upright": "Willpower, creation, manifestation",
+        "reversed": "Manipulation, illusions",
+    },{
+        "name": "The High Priestess",
+        "isReversed": False,
+        "upright": "Intuitive, unconscious, divine feminine",
+        "reversed": "Repressed feelings, withdrawal, silence"
+    },{
+        "name": "The Empress",
+        "isReversed": False,
+        "upright": "Femininity, nurturing, fertility, abundance",
+        "reversed": "Dependence, smothering, emptiness"
+    },{
+        "name": "The Emperor",
+        "isReversed": False,
+        "upright": "Authority, structure, a father figure",
+        "reversed": "Excessive control, rigidity, domination"
+    },{
+        "name": "The Hierophant",
+        "isReversed": False,
+        "upright": "Spiritual wisdom, tradition, conformity, morality, ethics",
+        "reversed": "Rebellion, subversiveness, freedom, personal beliefs"
+    },{
+        "name": "The Lovers",
+        "isReversed": False,
+        "upright": "Love, harmony, partnerships, choices",
+        "reversed": "Disbalance, one-sidedness, disharmony"
+    },{
+        "name": "The Charoit",
+        "isReversed": False,
+        "upright": "Direction, control, willpower, determination, success, action",
+        "reversed": "Lack of control, opposition, lack of direction, self-discipline"
+    },{
+        "name": "Strength",
+        "isReversed": False,
+        "upright": "Strength, courage, compassion, focus, persuasion, influence",
+        "reversed": "Self-doubt, weakness, insecurity, low energy, raw emotion"
+    },{
+        "name": "The Hermit",
+        "isReversed": False,
+        "upright": "Wisdom, soul searching, solitude, spiritual enlightenment, receiving or giving guidance",
+        "reversed": "Loneliness, isolation, paranoia, sadness, being overcome or paralyzed by fear"
+    },{
+        "name": "Wheel of Fortune",
+        "isReversed": False,
+        "upright": "Chance, destiny and fate, karma, turning points",
+        "reversed": "Upheaval, lousy luck, unwelcome change, setbacks"
+    },{
+        "name": "Justice",
+        "isReversed": False,
+        "upright": "Fairness, integrity, legal disputes, cause and effect, life lessons",
+        "reversed": "Injustice, dishonesty, failure to take responsibility, deceitful practices, negative karma"
+    },{
+        "name": "The Hanged Man",
+        "isReversed": False,
+        "upright": "Letting go, sacrificing, pausing to reflect, uncertainty, spiritual development",
+        "reversed": "Discontentment, stagnation, negative patterns, no solution, fear of sacrifice"
+    },{
+        "name": "Death",
+        "isReversed": False,
+        "upright": "Ending of a cycle, transitions, getting rid of excess, powerful movement, resolutions",
+        "reversed": "Resisting change, fear of new beginnings, dependency, repeating negative patterns"
+    },{
+        "name": "Temperance",
+        "isReversed": False,
+        "upright": "Balance, moderation, good health, cooperating with others, finding solutions",
+        "reversed": "Imbalance, discord, hastiness, overindulgence, risky behavior"
+    },{
+        "name": "The Devil",
+        "isReversed": False,
+        "upright": "Material focus, trapped in bondage, addictions and depression, negative thinking, betrayal",
+        "reversed": "Overcoming addiction, independence, reclaiming power, detachment, freedom"
+    },{
+        "name": "The Tower",
+        "isReversed": False,
+        "upright": "Intense and sudden change, release, painful loss, tragedy, revelation",
+        "reversed": "Resisting change, avoiding tragedy, a narrow escape, delaying what is inevitable"
+    },{
+        "name": "The Star",
+        "isReversed": False,
+        "upright": "Hope, renewal, creativity and inspiration, generosity, healing",
+        "reversed": "Despair, lack of hope, creative block, boredom, focusing on the negative"
+    },{
+        "name": "The Moon",
+        "isReversed": False,
+        "upright": "Fear, anxiety, confusion, delusion, risk",
+        "reversed": "Overcoming fear, finding the truth, conquering anxiety, gaining clarity"
+    },{
+        "name": "The Sun",
+        "isReversed": False,
+        "upright": "Happiness, fertility, success, optimism, truth",
+        "reversed": "Sadness, procrastination, pessimism, lies, failure"
+    },{
+        "name": "Judgement",
+        "isReversed": False,
+        "upright": "Reflection, inner calling, reckoning, awakening, rebirth, absolution",
+        "reversed": "Feeling down, self-doubt, missing the call fearlessness"
+    },{
+        "name": "The World",
+        "isReversed": False,
+        "upright": "Fulfillment, harmony, completion, integration, travel, unity",
+        "reversed": "Incompletion, shortcuts, delays, emptiness"
+    }
+]
+
+MINOR_ARCANA = [
+    {
+        "name": "Ace of Cups",
+        "inReversed": False,
+        "upright": "Love, new relationships, compassion, creativity",
+        "reversed": "Self-love, intuition, repressed emotions"
+    },{
+        "name": "Two of Cups",
+        "inReversed": False,
+        "upright": "Unified love, partnership, mutual attraction",
+        "reversed": "Self-love, break-ups, disharmony, distrust"
+    },{
+        "name": "Three of Cups",
+        "inReversed": False,
+        "upright": "Celebration, friendship, creativity, collaborations",
+        "reversed": "Independence, alone time, hardcore partying, threes-a-crowd"
+    },{
+        "name": "Four of Cups",
+        "inReversed": False,
+        "upright": "Meditation, contemplation, apathy, reevaluation",
+        "reversed": "Retreat, withdrawal, checking in for alignment"
+    },{
+        "name": "Five of Cups",
+        "inReversed": False,
+        "upright": "Regret, failure, disappointment, pessimism",
+        "reversed": "Personal setbacks, self-forgiveness, moving on"
+    },{
+        "name": "Six of Cups",
+        "inReversed": False,
+        "upright": "Revisiting the past, childhood memories, innocence, joy",
+        "reversed": "Living in the past, forgiveness, lacking playfulness"
+    },{
+        "name": "Seven of Cups",
+        "inReversed": False,
+        "upright": "Oppertunities, choices, wishful thinking, illusion",
+        "reversed": "Alignment, personal values, overwhelmed by choices"
+    },{
+        "name": "Eight of Cups",
+        "inReversed": False,
+        "upright": "Disappointment, abandonment, withdrawal, escapism",
+        "reversed": "Trying one more time, indecision, aimless drifting, walking away"
+    },{
+        "name": "Nine of Cups",
+        "inReversed": False,
+        "upright": "Contentment, satisfaction, gratitude, wish come true",
+        "reversed": "Inner happiness, materialism, dissatisfaction, indulgence"
+    },{
+        "name": "Ten of Cups",
+        "inReversed": False,
+        "upright": "Divine love, blissful relationships,harmony, alignment",
+        "reversed": "Disconnection, misaligned values, struggling relationships"
+    },{
+        "name": "Page of Cups",
+        "inReversed": False,
+        "upright": "Creative opportunities, intuitive messages, curiousity, possibility",
+        "reversed": "New ideas, doubting intuition, creative blocks, emotional immaturity"
+    },{
+        "name": "Knight of Cups",
+        "inReversed": False,
+        "upright": "Creativity, romance, charm, imagination, beauty",
+        "reversed": "Overactive imagination, unrealistic, jealous, moody"
+    },{
+        "name": "Queen of Cups",
+        "inReversed": False,
+        "upright": "Compassionate, caring, emotionally stable, intuitive, in flow",
+        "reversed": "Inner feelings, self-care, self-love, co-depedency"
+    },{
+        "name": "King of Cups",
+        "inReversed": False,
+        "upright": "Emotionally balanced, compassionate, diplomatic",
+        "reversed": "Self=compassion, inner feelings, moodiness, emotionally manipulative"
+    },{
+        "name": "Ace of Pentacles",
+        "isReversed": False,
+        "upright": "A new finacial or career opportuinity, manifestation, abundance",
+        "reversed": "Lost opportunity, lack of planning and foresight"
+    },{
+        "name": "Two of Pentacles",
+        "isReversed": False,
+        "upright": "Multiple priorities, time management, prioritisation, adaptability",
+        "reversed": "Over-committed, disorganisation, reprioritisation"
+    },{
+        "name": "Three of Pentacles",
+        "isReversed": False,
+        "upright": "Teamwork, collaboration, learning, implementation",
+        "reversed": "Disharmony, misalignment, working alone"
+    },{
+        "name": "Four of Pentacles",
+        "isReversed": False,
+        "upright": "Saving money, security, conservatism, scarcity, control",
+        "reversed": "Over-spending, greed, self-protection"
+    },{
+        "name": "Five of Pentacles",
+        "isReversed": False,
+        "upright": "Finacial loss, poverty, lack mindset, isolation, worry",
+        "reversed": ""
+    },{
+        "name": "Six of Pentacles",
+        "isReversed": False,
+        "upright": "Giving, recieving, sharing wealth, generosity, charity",
+        "reversed": "Self-care, unpaid debts, one-sided charity"
+    },{
+        "name": "Seven of Pentacles",
+        "isReversed": False,
+        "upright": "Long-term view, sustainable results, perseverance, investment",
+        "reversed": "Lack of long-term vision, limited success or reward"
+    },{
+        "name": "Eight of Pentacles",
+        "isReversed": False,
+        "upright": "Apprenticeship, repetitive tasks, mastery, skill development",
+        "reversed": "Self-development, perfectionism, misdirected activity"
+    },{
+        "name": "Nine of Pentacles",
+        "isReversed": False,
+        "upright": "Abundance, luxury, self-sifficiency, financial independence",
+        "reversed": "Self-worth, over-investment in work, hustling"
+    },{
+        "name": "Ten of Pentacles",
+        "isReversed": False,
+        "upright": "Wealth, financial security, family, long-term success, contribution",
+        "reversed": "The dark side of wealth, finacial failure or loss"
+    },{
+        "name": "Page of Pentacles",
+        "isReversed": False,
+        "upright": "Manifestation, finacial opportunity, skill development",
+        "reversed": "Lack of progress, procrastination, learn from failure"
+    },{
+        "name": "Knight of Pentacles",
+        "isReversed": False,
+        "upright": "Hard work, productivity, routine, conservatism",
+        "reversed": "Self-discipline, boredom, feeling stuck, perfectionism"
+    },{
+        "name": "Queen of Pentacles",
+        "isReversed": False,
+        "upright": "Nurturing, practical, providing finacially, a working parent",
+        "reversed": "Finacial independence, self-care, work-home conflict"
+    },{
+        "name": "King of Pentacles",
+        "isReversed": False,
+        "upright": "Wealth, business, leasdership, security, discipline, abundance",
+        "reversed": ""
+    },{
+        "name": "Ace of Swords",
+        "isReversed": False,
+        "upright": "Breakthroughs, new ideas, mental clarity, success",
+        "reversed": "Inner clarity, re-thinking and idea, clouded judgement"
+    },{
+        "name": "Two of Swords",
+        "isReversed": False,
+        "upright": "Difficult decisions, weighing up options, animpasse, avoidance",
+        "reversed": "Indecision, confusion, information overload, stalemate"
+    },{
+        "name": "Three of Swords",
+        "isReversed": False,
+        "upright": "Heartbreak, emotional pain, sorrow, grief, hurt",
+        "reversed": "Negative self-talk, releasing pain, optimism, forgiveness"
+    },{
+        "name": "Four of Swords",
+        "isReversed": False,
+        "upright": "Rest, relaxation, meditation, contemplation, recuperation",
+        "reversed": "Exhaustion, burn-out, deep contemplation, stagnation"
+    },{
+        "name": "Five of Swords",
+        "isReversed": False,
+        "upright": "Conflict, disagreements, competition, defeat, winning at all costs",
+        "reversed": "Reconciliation, making amends, past resentment"
+    },{
+        "name": "Six of Swords",
+        "isReversed": False,
+        "upright": "Transition, change, rite of passage, releasing baggage",
+        "reversed": "Personal transition, resistance to change, unfinished business"
+    },{
+        "name": "Seven of Swords",
+        "isReversed": False,
+        "upright": "Betrayal, deception, getting away with something, acting strategically",
+        "reversed": "Imposter syndrome, self deceit, keeping secrets"
+    },{
+        "name": "Eight of Swords",
+        "isReversed": False,
+        "upright": "Negative thoughts, self-imposed restriction, imprisonment, victim mentality",
+        "reversed": "Self-limiting beliefs, inner critic, releasing negative thoughts, open to new perspectives"
+    },{
+        "name": "Nine of Swords",
+        "isReversed": False,
+        "upright": "Anxiety, worry, fear, depression, nightmares",
+        "reversed": "Inner turmoil, deep-seated fears, secrets, releasing worry"
+    },{
+        "name": "Ten of Swords",
+        "isReversed": False,
+        "upright": "Painful endings, deep wounds, betrayal, loss, crisis",
+        "reversed": "Recovery, regeneration, resisting an inevitable end"
+    },{
+        "name": "Page of Swords",
+        "isReversed": False,
+        "upright": "New ideas, curiosity, thirst for knowledge, new ways of communicating",
+        "reversed": "Self-expression, all talk and no action, haphazard action, haste"
+    },{
+        "name": "Knight of Swords",
+        "isReversed": False,
+        "upright": "Ambitious, action-oriented, driven to succeed, fast-thinking",
+        "reversed": "Restless, unfocused, impulsive, burn-out"
+    },{
+        "name": "Queen of Swords",
+        "isReversed": False,
+        "upright": "Independent, unbiased judgment, clear boundaries, direct communication",
+        "reversed": "Overly-emotional, easily influenced, bitchy, cold-hearted"
+    },{
+        "name": "King of Swords",
+        "isReversed": False,
+        "upright": "Mental clarity, intellectual power, authority, truth",
+        "reversed": "Quiet power, inner truth, misuse of power, manipulation"
+    },{
+        "name": "Ace of Wands",
+        "isReversed": False,
+        "upright": "Inspiration, new opportunitues, growth, potential",
+        "reversed": "An emerging idea, lack of direction, distractions, delays"
+    },{
+        "name": "Two of Wands",
+        "isReversed": False,
+        "upright": "Future planning, progress, decisions, discovery",
+        "reversed": "Personal goals, inner alignment, fear of unknown, lack of planning"
+    },{
+        "name": "Three of Wands",
+        "isReversed": False,
+        "upright": "Progress, expansion, foresight, overseas opportunities",
+        "reversed": "Playing small, lack of foresight, unexpected delay"
+    },{
+        "name": "Four of Wands",
+        "isReversed": False,
+        "upright": "Celebration, joy, harmony, relaxation, homecoming",
+        "reversed": "Personal celebration, inner harmony, conflict with others, transition"
+    },{
+        "name": "Five of Wands",
+        "isReversed": False,
+        "upright": "Conflict, disagreements, competition, tension, diversity",
+        "reversed": "Inner conflict, conflict avoidance, tension release"
+    },{
+        "name": "Six of Wands",
+        "isReversed": False,
+        "upright": "Success, public recognition, progress, self-confidence",
+        "reversed": "Private achievement, personal definition of success, fall from grace egotism"
+    },{
+        "name": "Seven of Wands",
+        "isReversed": False,
+        "upright": "Challenge, competition, protection, perseverance",
+        "reversed": "Exhaustion, giving up, overwhelmed"
+    },{
+        "name": "Eight of Wands",
+        "isReversed": False,
+        "upright": "Movement, fast paced change, action, alignment, air travel",
+        "reversed": "Delays, frustration, resisting change, internal alignment"
+    },{
+        "name": "Nine of Wands",
+        "isReversed": False,
+        "upright": "Resilience, courage, persistence, test of faith, bounderaries",
+        "reversed": "Inner resources, struggle, overwhelm, defensive, paranoia"
+    },{
+        "name": "Ten of Wands",
+        "isReversed": False,
+        "upright": "Burden, extra responsibility, hard work, completion",
+        "reversed": "Doing it all, carrying the burden, delegation, release"
+    },{
+        "name": "Page of Wands",
+        "isReversed": False,
+        "upright": "Inspiration, ideas, discovery, limitless potential, free spirit",
+        "reversed": "Newly-formed ideas, redirecting energy, self-limiting beliefs, a spiritual path"
+    },{
+        "name": "Knight of Wands",
+        "isReversed": False,
+        "upright": "Energy, passion, inspired action, adventure, impulsiveness",
+        "reversed": "Passion project, hast, scattered energy, delays, frustration"
+    },{
+        "name": "Queen of Wands",
+        "isReversed": False,
+        "upright": "Courage, confidence, independence, social butterfly, determination",
+        "reversed": "Self-respect, self-confidence, introverted, re-establish sense of self"
+    },{
+        "name": "King of Wands",
+        "isReversed": False,
+        "upright": "Natural-born leader, vision, entrepreneur, honour",
+        "reversed": "Impulsiveness, haste, ruthless, high expectations"
+    }
+]
+
 rand_seed()
 ''' ------------------------------------------- UTILITY FUNCTIONS ------------------------------------------- '''
 def roll_dn(roll:str) -> dict:
@@ -269,7 +668,7 @@ def get_abs_modifier(i:int) -> int:
     elif i >= 2: return -4
     elif i == 1: return -5
     
-def create_deck() -> list:
+def create_standard_deck() -> list:
     values= ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
     suit = {"spade": "\u2660", "club": "\u2663", "heart": '\u2661', 'diamond': '\u2662'}
     deck = []
@@ -277,6 +676,32 @@ def create_deck() -> list:
         for v in values:
             deck.append(str(v) + str(suit[k]))
     rand_shuffle(deck)
+    return deck
+
+def create_domt_deck() -> list:
+    deck = DECK_OF_MANY_THINGS
+    rand_shuffle(deck)
+    return deck
+
+def create_tarot_major() -> list:
+    deck = MAJOR_ARCANA
+    rand_shuffle(deck)
+    for card in deck:
+        card["isReversed"] = rand_choice([True, False])
+    return deck
+
+def create_tarot_minor() -> list:
+    deck = MINOR_ARCANA
+    rand_shuffle(deck)
+    for card in deck:
+        card["isReversed"] = rand_choice([True, False])
+    return deck
+
+def create_tarot_full() -> list:
+    deck = MAJOR_ARCANA + MINOR_ARCANA
+    rand_shuffle(deck)
+    for card in deck:
+        card["isReversed"] = rand_choice([True, False])
     return deck
     
 ''' ------------------------------------------- GENERATOR FUNCTIONS ------------------------------------------- '''
