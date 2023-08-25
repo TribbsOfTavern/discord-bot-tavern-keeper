@@ -138,8 +138,6 @@ async def ping(ctx) -> None:
     
 @bot.command()
 async def roll(ctx, roll:str = commands.parameter(default='1d20', description='roll of the dice')) -> None:
-    # This is another format I was working with and might switch all commands over to.
-    # This helps the !help <cmd> explain the args
     """ Roll dice. 
         standard roll   3d6
         keep highest    2d20kh1

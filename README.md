@@ -1,47 +1,50 @@
 # discord-bot-tavern-keeper
 A discord bot created for my friends and I to enjoy in discord. It is largely Dungeons and Dragons themed.
 
-## __Some quick info__
+### __Some Quick Info__
 This discord bot is run locally at the moment as well as mongodb. Creating a clone of it isn't impossible, but currently running it as is will not be able to call many of the information commands as is. So I added some schema functions to the dndMongo.py file to help with understanding my collections as well as for adding homebrew in at a later date.
 
 Also this is my first publically shared project. Figured it would help me with my confidence level a bit when it came to writing code.
 
-  ## __Commands with this bot__
-  - !ping &ensp;&ensp; because its kind of a basic in learning how to send and reply to messages
-  
-  - !roll *<dn>* &ensp;&ensp;will take dice notation and return the results (2d6, 2d20kh1, 2d20kl1)
-  
-  - !roll_character &ensp;&ensp;will provide you with a basic random 5e D&D character unless you provide options
-    - level=*< 1-20 >*  &ensp;&ensp;  sets level. Invalid returns level 1
-    - class=*< class >*  &ensp;&ensp;  sets class. invalid returns random class
-    - race=*< race >*   &ensp;&ensp;  sets race. invalid returns a random race
-    - background=*< background >*  &ensp;&ensp;  sets background. invalid returns random background
-    - rolls=*< dn >*  &ensp;&ensp;  sets the style for rolling your stats. invalid returns 3d6 stats
-  
-  - !spell *<spell name>* &ensp;&ensp;will return information regarding a spell. **This only currently works with my mongodb collection
-  
-  - !item *<item name>* &ensp;&ensp;will return information regartding an item. **This only currently works with my mongodb collection
-  
-  - !monster *<monster name>* &ensp;&ensp;will return information regarding a monster. **This only currently works with my mongodb collection
-  
-  - !draw | !draw *<#>* &ensp;&ensp; will draw a number of cards from the server deck and return them. limited from 1 to 52
-  
-  - !fightme  |  !fightme *--force*  &ensp;&ensp;  will give you a 50-50 shot at defeating the tavern keeper. If you lose and are in a voice channel they will kick you from voice. If you are the server owner you have to --force the fight.
-  
-  - !coinflip | !coinflip *<heads|tails>* &ensp;&ensp; will flip and coin and return the result. If you called the flip it will also announce if you've won or lost.
+### __User Commands__
+| Command     | Opts | Description                               |
+| ----------- | ---- | ----------------------------------------- |
+| **!ping**   | |your basic call-response                       |
+| **!roll** | | return a result of the roll notation |
+| * *required* | *roll-notation* |  ie 2d6 or 2d20kh1 or 2d20kl1  | 
+| **!roll_character** | | returns a randomly generated level 1 D&D 5e character. |
+| * *optional* | level=*1-20* | set the level of the character rolled, invalid input will return level 1 |
+| * *optional* | class=*class-name* | set the class for the character rolled, invalid input will return a random class |
+| * *optional* | race=*race-name* | set the race for the character rolled, invalid input will return a random race |
+| * *optional* | background=*background* | set the background for the character rolled, invalid input will return random background |
+| * *optional* | rolles=*roll-notation* | set the roll notation for stat rolls, default is 3d6 but 4d6kh3 is a more common way to roll |
+| **!draw** | *1-52* | draw a number of cards from the server deck |
+| **!fightme** | | fight the Tavern Keeper with a 50-50 chance to win, if you are in voice and lose it kicks you from voice. |
+| * *optional* | *--force* |  Server owners need to use *--force* |
+| **!coinflip** | | flip a coin and get results |
+| * *optional* |  *heads* or *tails* | if a call was made will also announce if you won or lost |
+| **!createdeck** | | create a deck with a name of a certian type |
+| * *required* | *type* | 'standard', 'domt', 'tarot-full', 'tarot-major', 'tarot-minor' |
+| * *required* | *name* | name of the deck that must not contain spaces |
+| * *optional* | *auto_shuffle* | True or False. If True when the last card is pulled the deck will reshuffle. |
+| **!drawdeck** | | draw from a specified deck |
+| * *required* | *deck-name* | |
+| **!reshuffle** | | reshuffle a specified deck, must be deck author |
+| * *required* | *deck-name* | |
+| **!removedeck | | remove a specified deck from the list of decks on the server, must be the author or server owner |
+| * *required* | *deck-name* | |
+| **!revealdeck | | reveal a specified decks pile and discard pile, must be the deck author |
+| * *required* | *deck-name* | |
 
-## __Server Owner Only Commands__
-- !settings *<setting>* *<opt>*
-  - channel *<text-channel>* &ensp;&ensp;  will restrict the bot to only respond to commands in the server to a specified channel
-  - silent *<true|false>* &ensp;&ensp;  will set the notification blip to either be off(silent true) or on(silent false)
+### __Server Owner Commands__
+| Command     | Opts | Description                               |
+| ----------- | ---- | ----------------------------------------- |
+| **!settings channel** | | set the text-channel for the bot to reply to commands in |
+| * *required* | *channel-name* | |
+| **!settings silent** | | set if the bot's reply messages should be muted or not
+| * *required* | *True* or *False* | |
+| **!clean** | | purge the last 100 messages of the channel the command was input |
+| * *optional* | *number* | change the number of messages to purge |
+| * *optional* | *text-channel* | specify the channel the bot will purge messages from |
+| **!peakdeck** | | get the current stock in the server playing card deck |
 
-- !clean *<#>* *<text-channel>* &ensp;&ensp; will purge the commanded channel (or specified channel) or the number of messages expressed. Newest to Last. By default !clean will remove 100 messages from the channel the command is given.
-
-- !peakdeck &ensp;&ensp; Allows the owner to peak at the server deck, which is always stocked.
-
-- !test *<args>* &ensp;&ensp; does nothing really and I really only used it for learning how discordpy handled *args, if your wondering, *arg gives you a tuple of strings. ie '!somecommand a 2 c 4' would get you  args=('a', '2', 'c', '4')
-
-  
-  ## __Commands not yet implemented__
-  - !createdeck <type> <name>  &ensp;&ensp;  will create and save a deck of the type you specified.
-  - !drawdeck <name> <#>  &ensp;&ensp;  will allow you to pull a card from a named deck.
