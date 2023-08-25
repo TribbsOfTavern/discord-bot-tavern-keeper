@@ -2,7 +2,7 @@
 from random import randrange as rand_randrange
 from random import seed as rand_seed
 from random import shuffle as rand_shuffle
-from random import randchoice as rand_choice
+from random import choice as rand_choice
 from re import match as re_match
 
 ''' ------------------------------------------- CONSTANTS ------------------------------------------- '''
