@@ -286,7 +286,7 @@ async def fightme(ctx, *args) -> None:
             await ctx.author.move_to(None)
 
 @bot.command()
-async def coinflip(ctx, call:str=None) -> None:
+async def coinflip(ctx, call:str=commands.parameter(default=None, description="your call on the coin flip")) -> None:
     ''' Flip a coin and call it in the air.
         Ex. !coinflip               returns a Heads or Tails for the flip.
         Ex. !coinflip heads|tails   return the coin flip and if you win or lose.
@@ -307,19 +307,21 @@ async def createdeck(ctx, deck_type:str=commands.parameter(default="standard", d
         Ex. !createdeck standard myDeck
         Ex. !createdeck domt someName
         Ex. !createdeck tarot FortuneFavors
-    '''        
+    '''
+    types = ["standard", "domt", "tarot-full", "tarot-major", "tarot-minor"]
     try:
         if deck_name in config[str(ctx.guild.id)]["saved_decks"]: raise Exception("Deck already exists. Please consider a new name.")
         if deck_name == "": raise Exception("The deck must have a name.")
-        if deck_type.lower() != "standard" or deck_type.lower() != "domt" or deck_type.lower() != "tarot": raise Exception("Invalid deck type. Make sure to use standard, domt, or tarot")
+        if deck_type.lower() not in types: raise Exception(f"Invalid deck type. Make sure to use one of these: standard, domt, tarot-full, tarot-major, tarot-minor")
         
-        if deck_type.lower() == "standard": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_standard_deck(), "discraded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
-        if deck_type.lower() == "domt": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_domt_deck(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
-        if deck_type.lower() == "tarot-major": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_major(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
-        if deck_type.lower() == "tarot-minor": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_minor(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
-        if deck_type.lower() == "tarot-full": config[str(ctx.guild.id)]["saved_decks"][deck_name] = {"deck": dnd.create_tarot_full(), "discarded": [], "type": deck_type.lower(), "owner": {ctx.author.id}, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "standard":     config[str(ctx.guild.id)]["saved_decks"][deck_name] ={"deck": dnd.create_standard_deck(), "discarded": [], "type": deck_type.lower(), "owner": ctx.author.id, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "domt":         config[str(ctx.guild.id)]["saved_decks"][deck_name] ={"deck": dnd.create_domt_deck(),     "discarded": [], "type": deck_type.lower(), "owner": ctx.author.id, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-major":  config[str(ctx.guild.id)]["saved_decks"][deck_name] ={"deck": dnd.create_tarot_major(),   "discarded": [], "type": deck_type.lower(), "owner": ctx.author.id, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-minor":  config[str(ctx.guild.id)]["saved_decks"][deck_name] ={"deck": dnd.create_tarot_minor(),   "discarded": [], "type": deck_type.lower(), "owner": ctx.author.id, "auto_shuffle": auto_shuffle}
+        if deck_type.lower() == "tarot-full":   config[str(ctx.guild.id)]["saved_decks"][deck_name] ={"deck": dnd.create_tarot_full(),    "discarded": [], "type": deck_type.lower(), "owner": ctx.author.id, "auto_shuffle": auto_shuffle}
         
     except Exception as e:
+        print(e)
         await bot_send(ctx, str(e))        
 
 @bot.command()
@@ -415,10 +417,10 @@ async def removedeck(ctx, deck_name:str=commands.parameter(default="", descripti
         if ctx.author.id != config[str(ctx.guild.id)]["saved_decks"][deck_name]["owner"] or not is_owner(ctx): raise Exception(f"You need to be the deck owner or server owner to remove a named deck.")
         
         del config[str(ctx.guild.id)]["saved_decks"][deck_name]
-        bot_send(ctx, f'Deck {deck_name} was removed.')
+        await bot_send(ctx, f'Deck {deck_name} was removed.')
         
     except Exception as e:
-        bot_send(ctx, str(e))
+        await bot_send(ctx, str(e))
 
 @bot.command()
 async def revealdeck(ctx, deck_name:str=commands.parameter(default="", description="Name of the deck you wish to reveal.")) -> None:
@@ -432,7 +434,7 @@ async def revealdeck(ctx, deck_name:str=commands.parameter(default="", descripti
         res = f'{ctx.author.display_name} has decided to reveal the {deck_name} deck.\n'
         if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "standard":
             res += f'Remaining deck: {" | ".join(config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"])}\n'
-            res += f'Discarded: {" | ".join(config[str(ctx.guild.id)]["saved_decks"][deck_name]["discraded"])}'
+            res += f'Discarded: {" | ".join(config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"])}'
             
         else:
             res += f'Remaining deck: '
@@ -446,7 +448,17 @@ async def revealdeck(ctx, deck_name:str=commands.parameter(default="", descripti
             
         await bot_send(ctx, res)
     except Exception as e:
-        bot_send(ctx, str(e))
+        await bot_send(ctx, str(e))
+        
+@bot.command()
+async def listdecks(ctx) -> None:
+    ''' Get a list of current decks saved to server. '''
+    res = ""
+    res += f'Number of active decks: {len(config[str(ctx.guild.id)]["saved_decks"])}\n'
+    for each in config[str(ctx.guild.id)]["saved_decks"]:
+        res += f'{each} -- {config[str(ctx.guild.id)]["saved_decks"][each]["type"]}'
+    
+    await bot_send(ctx, res)
     
 # Tasks ----------------------------------------------------- #
 @tasks.loop(seconds=autosave_time)
@@ -511,13 +523,19 @@ async def peakdeck(ctx) -> None:
         await bot_send(ctx, f'{len(config[str(ctx.guild.id)]["server_deck"])} cards remaining. | {" | ".join(config[str(ctx.guild.id)]["server_deck"])}')
 
 @bot.command(hidden=True)
+async def saveconfig(ctx) -> None:
+    if ctx.author.id == secret.dev_id:
+        saveConfig()
+        await ctx.message.delete()
+
+@bot.command(hidden=True)
 async def test(ctx, *args) -> None:
     ''' This has speciffically only been used for dev.
         It changes based on what I am testing.
         ** Owner Only Command **
     '''
     if is_owner(ctx):
-        await bot_send(ctx, ' | '.join(args))
+        print(config)
 
 # Utility Functions ----------------------------------------- #
 async def bot_send(ctx, msg, embed=None, view=None) -> None:
@@ -618,13 +636,7 @@ def loadConfig(file_name) -> dict:
                 "tables": {},
                 "saved_decks": {}
             }
-        print(f'Tavern Keeper Config was created as {file_name}')
-    
-    # Update Configs that might not have the keys. ---> A litte too forward thinking
-    if "tables" not in res: res["tables"] = {}
-    elif "tables" in res and type(res["tables"]) != dict: res["tables"] = {}
-    if "saved_decks" not in res: res["saved_decks"] = {}
-    elif "saved_decks" in res and type(res["saved_decks"]) != dict: res["saved_decks"] = {}
+        print(f'Tavern Keeper Discord Bot Config was created as {file_name}')
     
     return res
     

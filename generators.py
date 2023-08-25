@@ -788,3 +788,16 @@ def generate_character(opts:list) -> dict:
     }
     
     return character
+
+if __name__ == "__main__":
+    test_standard       = create_standard_deck()
+    test_domt           = create_domt_deck()
+    test_tarot_major    = create_tarot_major()
+    test_tarot_minor    = create_tarot_minor()
+    test_tarot_full     = create_tarot_full()
+    
+    print(test_standard, '\n\n')
+    print(test_domt, '\n\n')
+    print(test_tarot_major, '\n\n')
+    print(test_tarot_minor, '\n\n')
+    print(test_tarot_full, '\n\n')
