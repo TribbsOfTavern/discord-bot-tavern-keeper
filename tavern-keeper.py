@@ -334,7 +334,7 @@ async def drawdeck(ctx, deck_name:str=commands.parameter(default="", description
         
         card = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][0]
         config[str(ctx.guild.id)]["saved_decks"][deck_name]["discarded"].append(card)
-        config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
+        config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"] = config[str(ctx.guild.id)]["saved_decks"][deck_name]["deck"][1:]
         
         res = ""
         if config[str(ctx.guild.id)]["saved_decks"][deck_name]["type"] == "standard":
